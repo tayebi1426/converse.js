@@ -10,6 +10,7 @@
  */
 import "@converse/headless/headless";
 import "converse-registry";
+import "converse-rootview";
 import "converse-autocomplete";
 import "converse-bookmark-views";  // Views for XEP-0048 Bookmarks
 import "converse-chatview";        // Renders standalone chat boxes for single user chat

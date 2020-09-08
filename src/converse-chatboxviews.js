@@ -7,13 +7,10 @@ import './components/converse.js';
 import "@converse/headless/converse-chatboxes";
 import tpl_avatar from "templates/avatar.svg";
 import tpl_background_logo from "templates/background_logo.html";
-import tpl_converse from "templates/converse.js";
 import { View } from "@converse/skeletor/src/view";
 import { ElementView } from "@converse/skeletor/src/element";
 import { _converse, api, converse } from "@converse/headless/converse-core";
-import { render } from "lit-html";
-
-const u = converse.env.utils;
+import { html, render } from "lit-html";
 
 
 const AvatarMixin = {
@@ -66,26 +63,8 @@ class ChatBoxViews extends ElementView {
         api.trigger('chatBoxViewsInitialized');
     }
 
-    _ensureElement () {
-        const el = _converse.root.querySelector('#conversejs');
-        if (el) {
-            el.parentElement.replaceChild(el, this);
-        } else {
-            this.setAttribute('id', 'conversejs');
-            u.addClass(`theme-${api.settings.get('theme')}`, this);
-            const body = _converse.root.querySelector('body');
-            if (body) {
-                body.appendChild(this);
-            } else {
-                // Perhaps inside a web component?
-                _converse.root.appendChild(this);
-            }
-        }
-    }
-
     render () {
-        this._ensureElement();
-        render(tpl_converse(), this);
+        render(html`<div class="converse-chatboxes row no-gutters"></div>`, this);
         this.row_el = this.querySelector('.row');
     }
 
@@ -130,7 +109,6 @@ converse.plugins.add('converse-chatboxviews', {
         api.settings.extend({
             'animate': true,
             'theme': 'default',
-            'auto_insert': true
         });
 
         _converse.ViewWithAvatar = View.extend(AvatarMixin);
@@ -138,12 +116,6 @@ converse.plugins.add('converse-chatboxviews', {
 
         /************************ BEGIN Event Handlers ************************/
         api.listen.on('cleanup', () => (delete _converse.chatboxviews));
-
-        api.listen.on('chatBoxesInitialized', () => {
-            if (api.settings.get('auto_insert')) {
-                _converse.chatboxviews = new _converse.ChatBoxViews();
-            }
-        });
 
 
         function calculateViewportHeightUnit () {

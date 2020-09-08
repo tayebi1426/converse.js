@@ -3,7 +3,7 @@ import '../components/font-awesome.js';
 
 
 export default () => html`
-    <div class="converse-chatboxes row no-gutters"></div>
+    <converse-chats></converse-chats>
     <div id="converse-modals" class="modals"></div>
     <converse-fontawesome></converse-fontawesome>
 `;
