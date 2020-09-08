@@ -475,7 +475,6 @@ converse.plugins.add('converse-chatview', {
             async updateAfterMessagesFetched () {
                 await this.model.messages.fetched;
                 this.renderChatContent();
-                this.insertIntoDOM();
                 this.scrollDown();
                 /**
                  * Triggered whenever a `_converse.ChatBox` instance has fetched its messages from
@@ -538,18 +537,6 @@ converse.plugins.add('converse-chatview', {
                 } else {
                     this.scrollDown();
                 }
-            },
-
-            insertIntoDOM () {
-                _converse.chatboxviews.insertRowColumn(this.el);
-                /**
-                 * Triggered once the _converse.ChatBoxView has been inserted into the DOM
-                 * @event _converse#chatBoxInsertedIntoDOM
-                 * @type { _converse.ChatBoxView | _converse.HeadlinesBoxView }
-                 * @example _converse.api.listen.on('chatBoxInsertedIntoDOM', view => { ... });
-                 */
-                api.trigger('chatBoxInsertedIntoDOM', this);
-                return this;
             },
 
             addSpinner (append=false) {
@@ -1158,8 +1145,8 @@ converse.plugins.add('converse-chatview', {
             }
         });
 
-        api.listen.on('chatBoxViewsInitialized', () => {
-            const views = _converse.chatboxviews;
+        api.listen.on('chatBoxViewsInitialized', async () => {
+            const views = await api.chatviews.get();
             _converse.chatboxes.on('add', async item => {
                 if (!views.get(item.get('id')) && item.get('type') === _converse.PRIVATE_CHAT_TYPE) {
                     await item.initialized;
@@ -1170,14 +1157,13 @@ converse.plugins.add('converse-chatview', {
 
 
         /************************ BEGIN Event Handlers ************************/
-        function onWindowStateChanged (data) {
-            if (_converse.chatboxviews) {
-                _converse.chatboxviews.forEach(view => {
-                    if (view.model.get('id') !== 'controlbox') {
-                        view.onWindowStateChanged(data.state);
-                    }
-                });
-            }
+        async function onWindowStateChanged (data) {
+            const views = await api.chatviews.get();
+            views.forEach(view => {
+                if (view.model.get('id') !== 'controlbox') {
+                    view.onWindowStateChanged(data.state);
+                }
+            });
         }
         api.listen.on('windowStateChanged', onWindowStateChanged);
         api.listen.on('connected', () => api.disco.own.features.add(Strophe.NS.SPOILER));
@@ -1206,14 +1192,16 @@ converse.plugins.add('converse-chatview', {
                   * // To return an array of views, provide an array of JIDs:
                   * _converse.api.chatviews.get(['buddy1@example.com', 'buddy2@example.com'])
                   */
-                get (jids) {
+                async get (jids) {
+                    await api.waitUntil('chatBoxViewsInitialized');
+                    const els = Array.from(api.settings.get('root').querySelector('converse-chats')?.children);
                     if (jids === undefined) {
-                        return Object.values(_converse.chatboxviews.getAll());
+                        return els;
+                    } else if (isString(jids)) {
+                        return Array.from(els).filter(el => el.model.get('jid') === jids)[0];
+                    } else {
+                        return Array.from(els).filter(el => jids.include(el.model.get('jid')));
                     }
-                    if (isString(jids)) {
-                        return _converse.chatboxviews.get(jids);
-                    }
-                    return jids.map(jid => _converse.chatboxviews.get(jid));
                 }
             }
         });

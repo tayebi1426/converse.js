@@ -74,6 +74,10 @@ function checkFileTypes (types, url) {
     return !!types.filter(ext => filename.endsWith(ext)).length;
 }
 
+u.getElement = (s) => {
+    return api.settings.get('root').querySelector(s);
+}
+
 u.isAudioURL = url => checkFileTypes(['.ogg', '.mp3', '.m4a'], url);
 u.isVideoURL = url => checkFileTypes(['.mp4', '.webm'], url);
 

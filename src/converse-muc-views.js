@@ -1648,23 +1648,11 @@ converse.plugins.add('converse-muc-views', {
                 ev.preventDefault();
                 api.rooms.open(ev.target.href);
             }
-            _converse.chatboxviews.delegate('click', 'a.open-chatroom', openChatRoomFromURIClicked);
-
-            async function addView (model) {
-                const views = _converse.chatboxviews;
-                if (!views.get(model.get('id')) &&
-                        model.get('type') === _converse.CHATROOMS_TYPE &&
-                        model.isValid()
-                ) {
-                    await model.initialized;
-                    return views.add(model.get('id'), new _converse.ChatRoomView({model}));
-                }
-            }
-            _converse.chatboxes.on('add', addView);
+            u.getElement('converse-chats')?.delegate('click', 'a.open-chatroom', openChatRoomFromURIClicked);
         });
 
-        api.listen.on('clearSession', () => {
-            const view = _converse.chatboxviews.get('controlbox');
+        api.listen.on('clearSession', async () => {
+            const view = await api.chatviews.get('controlbox');
             if (view && view.roomspanel) {
                 view.roomspanel.model.destroy();
                 view.roomspanel.remove();
@@ -1737,14 +1725,15 @@ converse.plugins.add('converse-muc-views', {
                  * @param {(String[]|String)} jids The JID or array of JIDs of the chatroom(s)
                  * @returns { Promise } - Promise which resolves once the views have been closed.
                  */
-                close (jids) {
+                async close (jids) {
                     let views;
                     if (jids === undefined) {
-                        views = _converse.chatboxviews;
+                        views = await api.chatviews.get();
                     } else if (isString(jids)) {
-                        views = [_converse.chatboxviews.get(jids)].filter(v => v);
+                        views = await Promise.all(api.chatviews.get(jids));
+                        views = [views].filter(v => v);
                     } else if (Array.isArray(jids)) {
-                        views = jids.map(jid => _converse.chatboxviews.get(jid));
+                        views = await Promise.all(jids.map(jid => api.chatviews.get(jid)));
                     }
                     return Promise.all(views.map(v => (v.is_chatroom && v.model && v.close())))
                 }

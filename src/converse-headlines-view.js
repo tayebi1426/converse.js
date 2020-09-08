@@ -205,10 +205,9 @@ converse.plugins.add('converse-headlines-view', {
 
         /************************ BEGIN Event Handlers ************************/
         api.listen.on('chatBoxViewsInitialized', () => {
-            const views = _converse.chatboxviews;
-            _converse.chatboxes.on('add', item => {
-                if (!views.get(item.get('id')) && item.get('type') === _converse.HEADLINES_TYPE) {
-                    views.add(item.get('id'), new _converse.HeadlinesBoxView({model: item}));
+            _converse.chatboxes.on('add', async (item) => {
+                if (!await api.chatviews.get(item.get('id')) && item.get('type') === _converse.HEADLINES_TYPE) {
+                    api.chatviews.add(item.get('id'), new _converse.HeadlinesBoxView({model: item}));
                 }
             });
         });

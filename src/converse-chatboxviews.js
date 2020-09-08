@@ -51,6 +51,8 @@ class ChatBoxViews extends ElementView {
         const body = document.querySelector('body');
         body.classList.add(`converse-${api.settings.get("view_mode")}`);
         this.classList.add(`converse-${api.settings.get("view_mode")}`);
+        this.classList.add('converse-chatboxes');
+
         if (api.settings.get("singleton")) {
             this.classList.add(`converse-singleton`);
         }
@@ -64,7 +66,9 @@ class ChatBoxViews extends ElementView {
     }
 
     render () {
-        render(html`<div class="converse-chatboxes row no-gutters"></div>`, this);
+        // TODO: Finish this up.
+        // Need to declaratively renders views for chats.
+        render(_converse.chatboxes.map(m => tpl_chat(m.get('jid'))), this);
         this.row_el = this.querySelector('.row');
     }
 
@@ -115,8 +119,6 @@ converse.plugins.add('converse-chatboxviews', {
         _converse.ChatBoxViews = ChatBoxViews;
 
         /************************ BEGIN Event Handlers ************************/
-        api.listen.on('cleanup', () => (delete _converse.chatboxviews));
-
 
         function calculateViewportHeightUnit () {
             const vh = window.innerHeight * 0.01;

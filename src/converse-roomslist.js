@@ -97,10 +97,10 @@ converse.plugins.add('converse-roomslist', {
                 });
             },
 
-            insertIntoControlBox () {
-                const controlboxview = _converse.chatboxviews.get('controlbox');
-                if (controlboxview !== undefined && !u.rootContains(_converse.root, this.el)) {
-                    const el = controlboxview.el.querySelector('.list-container--openrooms');
+            async insertIntoControlBox () {
+                const view = await api.chatviews.get('controlbox');
+                if (view !== undefined && !u.rootContains(_converse.root, this.el)) {
+                    const el = view.el.querySelector('.list-container--openrooms');
                     el && el.parentNode.replaceChild(this.el, el);
                 }
             },
@@ -126,13 +126,13 @@ converse.plugins.add('converse-roomslist', {
                 api.chatviews.get(jid).maybeFocus();
             },
 
-            closeRoom (ev) {
+            async closeRoom (ev) {
                 ev.preventDefault();
                 const name = ev.target.getAttribute('data-room-name');
                 const jid = ev.target.getAttribute('data-room-jid');
                 if (confirm(__("Are you sure you want to leave the groupchat %1$s?", name))) {
-                    // TODO: replace with API call
-                    _converse.chatboxviews.get(jid).close();
+                    const view = await api.chatviews.get(jid);
+                    view.close();
                 }
             },
 
